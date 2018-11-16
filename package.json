@@ -1,0 +1,33 @@
+{
+  "name": "async-context",
+  "version": "0.1.0",
+  "description": "async_hooks playground",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src",
+    "lint": "eslint src",
+    "pretest": "npm run lint",
+    "test": "jest --coverage",
+    "tdd": "jest --watch --verbose"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/"
+    ],
+    "testRegex": "/__tests__/.*\\.spec\\.js$"
+  },
+  "keywords": [],
+  "author": "mawrkus <web@sparring-partner.be>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^22.0.0",
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.6"
+  }
+}
