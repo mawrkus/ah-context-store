@@ -12,7 +12,7 @@ const FD_STDOUT = 1;
  * lifetime of asynchronous resources created inside a Node.js application.
  * @see https://nodejs.org/api/async_hooks.html
  */
-class AsyncContext {
+class AsyncContextStore {
   /**
    * @param {Boolean} [debug]
    */
@@ -39,7 +39,7 @@ class AsyncContext {
       destroy: this._destroy,
     });
 
-    this._map = new Map();
+    this._store = new Map();
     this._currentId = this.getCurrentId();
   }
 
@@ -47,14 +47,14 @@ class AsyncContext {
    * @return {Number} Number of elements
    */
   get size() {
-    return this._map.size;
+    return this._store.size;
   }
 
   /**
    * @return {Map}
    */
   get data() {
-    return this._map;
+    return this._store;
   }
 
   /**
@@ -62,7 +62,7 @@ class AsyncContext {
    * @return {AsyncHook}
    */
   enable() {
-    this._map.set(this._currentId, {
+    this._store.set(this._currentId, {
       _parentId: null,
       data: {},
     });
@@ -111,7 +111,7 @@ class AsyncContext {
   set(key, value) {
     this.log(`[${this._currentId}] SET > '${key}' = ${value}`);
 
-    const { data } = this._map.get(this._currentId);
+    const { data } = this._store.get(this._currentId);
     data[key] = value;
 
     return value;
@@ -127,7 +127,7 @@ class AsyncContext {
     let id = this._currentId;
 
     while (id) {
-      const { data, _parentId } = this._map.get(id);
+      const { data, _parentId } = this._store.get(id);
 
       if (key in data) {
         value = data[key];
@@ -155,7 +155,7 @@ class AsyncContext {
    * @param {Object} resource
    */
   _init(asyncId, type, triggerAsyncId/* , resource */) {
-    this._map.set(asyncId, {
+    this._store.set(asyncId, {
       _parentId: triggerAsyncId,
       // _type: type,
       // _resource: resource,
@@ -184,8 +184,8 @@ class AsyncContext {
    * @param {Number} asyncId
    */
   _destroy(asyncId) {
-    this._map.delete(asyncId);
+    this._store.delete(asyncId);
   }
 }
 
-module.exports = AsyncContext;
+module.exports = AsyncContextStore;

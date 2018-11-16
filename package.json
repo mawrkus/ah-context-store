@@ -1,5 +1,5 @@
 {
-  "name": "async-context",
+  "name": "async-context-store",
   "version": "0.1.0",
   "description": "async_hooks playground",
   "main": "src/index.js",
