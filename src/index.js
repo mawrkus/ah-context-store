@@ -11,7 +11,7 @@ process.on('unhandledRejection', (error) => {
 
 const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const handle = async () => {
+const handle = () => {
   asyncContextStore.get('pre');
   asyncContextStore.get('post');
   return resolveAfter(10);
@@ -23,11 +23,13 @@ const handle = async () => {
   await resolveAfter(10);
   asyncContextStore.set('post', 'you');
   await resolveAfter(100);
-  handle();
+  const h1P = handle();
 
   await resolveAfter(20);
   asyncContextStore.set('post', 'me');
-  handle();
+  const h2P = handle();
+
+  await Promise.all([h1P, h2P]);
 
   asyncContextStore.disable();
   asyncContextStore.log('Data ->', asyncContextStore.data);

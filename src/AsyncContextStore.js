@@ -125,11 +125,13 @@ class AsyncContextStore {
   get(key) {
     let value;
     let id = this._currentId;
+    let found = false;
 
     while (id) {
       const { data, _parentId } = this._store.get(id);
 
-      if (key in data) {
+      found = key in data;
+      if (found) {
         value = data[key];
         break;
       }
@@ -137,10 +139,10 @@ class AsyncContextStore {
       id = _parentId;
     }
 
-    if (!id) {
-      this.log(`[${this._currentId}] GET < '${key}' -> not found!`);
-    } else {
+    if (found) {
       this.log(`[${this._currentId}] GET < '${key}' = ${value} (from ${id})`);
+    } else {
+      this.log(`[${this._currentId}] GET < '${key}' -> not found!`);
     }
 
     return value;
