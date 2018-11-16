@@ -1,48 +1,35 @@
-const EventsEmitter = require('events');
-const AsyncContext = require('./AsyncContext');
+const AsyncContextStore = require('./AsyncContextStore');
 
-const asyncContext = new AsyncContext({ debug: false });
+const asyncContextStore = new AsyncContextStore({ debug: false });
 
-asyncContext.enable();
+asyncContextStore.enable();
 
 process.on('unhandledRejection', (error) => {
-  asyncContext.log(error);
+  asyncContextStore.log(error);
   process.exit(1);
 });
 
-const resolveAfter = (randMs, fixedMs) => new Promise((resolve) => {
-  setTimeout(resolve, randMs ? Math.ceil(Math.random() * randMs) : fixedMs);
-});
+const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const handle = async () => {
-  asyncContext.get('init');
-  asyncContext.get('loop-post-resolve');
+  asyncContextStore.get('pre');
+  asyncContextStore.get('post');
   return resolveAfter(10);
 };
 
-const listener = new EventsEmitter();
-
-listener.on('request', async (event) => {
-  asyncContext.set('loop-post-resolve', event);
-
-  await handle();
-
-  asyncContext.get('init');
-  asyncContext.get('loop-post-resolve');
-});
-
 (async () => {
-  asyncContext.set('init', 'here we gooo...');
+  asyncContextStore.set('pre', 'initializing...');
 
-  for (let i = 0; i < 2; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    await resolveAfter(10);
-    listener.emit('request', `request #${i + 1}`);
-  }
+  await resolveAfter(10);
+  asyncContextStore.set('post', 'you');
+  await resolveAfter(100);
+  handle();
 
-  await resolveAfter(null, 100);
+  await resolveAfter(20);
+  asyncContextStore.set('post', 'me');
+  handle();
 
-  asyncContext.disable();
-  asyncContext.log('Data ->', asyncContext.data);
-  asyncContext.log('# of items ->', asyncContext.size);
+  asyncContextStore.disable();
+  asyncContextStore.log('Data ->', asyncContextStore.data);
+  asyncContextStore.log('# of items ->', asyncContextStore.size);
 })();
