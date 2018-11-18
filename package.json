@@ -1,15 +1,20 @@
 {
   "name": "async-context-store",
   "version": "0.1.0",
-  "description": "async_hooks playground",
+  "description": "A context storage for async resources",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon --watch src",
     "lint": "eslint src",
     "pretest": "npm run lint",
     "test": "jest --coverage",
-    "tdd": "jest --watch --verbose"
+    "tdd": "jest --watch --verbose",
+    "demo": "nodemon src/demo.js --watch src"
   },
+  "main": "index.js",
+  "files": [
+    "src",
+    "index.js"
+  ],
   "engines": {
     "node": ">=8"
   },
@@ -19,9 +24,15 @@
     ],
     "testRegex": "/__tests__/.*\\.spec\\.js$"
   },
-  "keywords": [],
+  "keywords": [
+    "async_hooks",
+    "async resources",
+    "async",
+    "context"
+  ],
   "author": "mawrkus <web@sparring-partner.be>",
   "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
