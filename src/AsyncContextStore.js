@@ -37,13 +37,15 @@ class AsyncContextStore {
 
       this.set = (key, value) => {
         const currentId = asyncHooks.executionAsyncId();
-        this.log(`[${currentId}] AsyncContextStore.set('${key}', ${value})`);
+        let msg = `[${currentId}] AsyncContextStore.set('${key}', ${value})`;
 
         const { context } = this._store.get(currentId);
         if (key in context) {
           const existingValue = context[key];
-          this.log(`[${currentId}] Overwriting existing value (${existingValue})!`);
+          msg += ` - overwriting existing value: ${existingValue}`;
         }
+
+        this.log(msg);
 
         return originalSet(key, value);
       };
@@ -53,7 +55,9 @@ class AsyncContextStore {
       this.get = (key) => {
         const value = originalGet(key);
         const currentId = asyncHooks.executionAsyncId();
+
         this.log(`[${currentId}] AsyncContextStore.get('${key}') -> ${value}`);
+
         return value;
       };
 
