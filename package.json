@@ -9,6 +9,10 @@
     "test": "jest --coverage",
     "tdd": "jest --watch --verbose",
     "demo": "nodemon demo.js --watch src",
+    "prerelease": "npm run test",
+    "release": "npm version -m \"New version: %s\"",
+    "postrelease": "npm run push && npm publish",
+    "push": "git push origin master && git push origin --tags"
   },
   "main": "index.js",
   "files": [
