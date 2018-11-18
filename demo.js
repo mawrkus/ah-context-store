@@ -1,4 +1,4 @@
-const AsyncContextStore = require('./AsyncContextStore');
+const AsyncContextStore = require('./src/AsyncContextStore');
 
 const asyncContextStore = new AsyncContextStore({ debug: { methods: true } });
 

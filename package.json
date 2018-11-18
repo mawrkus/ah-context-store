@@ -8,7 +8,7 @@
     "pretest": "npm run lint",
     "test": "jest --coverage",
     "tdd": "jest --watch --verbose",
-    "demo": "nodemon src/demo.js --watch src"
+    "demo": "nodemon demo.js --watch src",
   },
   "main": "index.js",
   "files": [
