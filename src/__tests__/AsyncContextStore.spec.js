@@ -14,6 +14,7 @@ describe('AsyncContextStore', () => {
 
   it('should expose the "size" and "data" properties', () => {
     const asyncContextStore = new AsyncContextStore();
+
     expect(asyncContextStore.size).toEqual(expect.any(Number));
     expect(asyncContextStore.data).toBeInstanceOf(Map);
   });
@@ -48,20 +49,21 @@ describe('AsyncContextStore', () => {
   describe('#set(key, value) and #get(key)', () => {
     let asyncContextStore;
 
-    beforeAll(() => {
-      asyncContextStore = new AsyncContextStore().enable();
-    });
-
-    afterAll(() => {
+    afterEach(() => {
       asyncContextStore.disable();
     });
 
     it('should store then retrieve a value from the same async context', () => {
+      asyncContextStore = new AsyncContextStore().enable();
+
       asyncContextStore.set('test', 42);
+
       expect(asyncContextStore.get('test')).toBe(42);
     });
 
     it('should retrieve a value from an async context previously created (depth 1)', (done) => {
+      asyncContextStore = new AsyncContextStore().enable();
+
       asyncContextStore.set('test', 42);
 
       resolveAfter(10)
@@ -73,6 +75,8 @@ describe('AsyncContextStore', () => {
     });
 
     it('should retrieve values stored from multiple async contexts (depth 2)', (done) => {
+      asyncContextStore = new AsyncContextStore().enable();
+
       asyncContextStore.set('depth-1', 42);
 
       resolveAfter(10)
@@ -90,6 +94,8 @@ describe('AsyncContextStore', () => {
 
     describe('a more complex scenario', () => {
       it('should retrieve all values stored properly', (done) => {
+        asyncContextStore = new AsyncContextStore().enable();
+
         expect.assertions(2);
 
         const request1P = resolveAfter(10)

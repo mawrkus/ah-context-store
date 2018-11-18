@@ -38,6 +38,13 @@ class AsyncContextStore {
       this.set = (key, value) => {
         const currentId = asyncHooks.executionAsyncId();
         this.log(`[${currentId}] AsyncContextStore.set('${key}', ${value})`);
+
+        const { context } = this._store.get(currentId);
+        if (key in context) {
+          const existingValue = context[key];
+          this.log(`[${currentId}] Overwriting existing value (${existingValue})!`);
+        }
+
         return originalSet(key, value);
       };
 
