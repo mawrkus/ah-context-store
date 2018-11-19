@@ -19,50 +19,7 @@ class AsyncContextStore {
    * @param {Boolean} [debug.methods=false]
    */
   constructor({ debug } = { debug: { hooks: false, methods: false } }) {
-    if (debug.hooks) {
-      ['_init', '_before', '_after', '_destroy'].forEach((methodName) => {
-        const originalMethod = this[methodName].bind(this);
-
-        this[methodName] = (...args) => {
-          this.log(`AsyncContextStore.${methodName}`, ...args);
-          return originalMethod(...args);
-        };
-      });
-
-      this.log('AsyncContextStore -> hooks logging enabled.');
-    }
-
-    if (debug.methods) {
-      const originalSet = this.set.bind(this);
-
-      this.set = (key, value) => {
-        const currentId = asyncHooks.executionAsyncId();
-        let msg = `[${currentId}] AsyncContextStore.set('${key}', ${value})`;
-
-        const { context } = this._store.get(currentId);
-        if (key in context) {
-          const existingValue = context[key];
-          msg += ` - overwriting existing value: ${existingValue}`;
-        }
-
-        this.log(msg);
-
-        return originalSet(key, value);
-      };
-
-      const originalGet = this.get.bind(this);
-
-      this.get = (key) => {
-        const value = originalGet(key);
-        const currentId = asyncHooks.executionAsyncId();
-
-        this.log(`[${currentId}] AsyncContextStore.get('${key}') -> ${value}`);
-
-        return value;
-      };
-
-      this.log('AsyncContextStore -> methods logging enabled.');
-    }
+    this._setupLogging({ debug });
 
     this._hook = asyncHooks.createHook({
       init: this._init.bind(this),
@@ -206,6 +163,73 @@ class AsyncContextStore {
    */
   _destroy(asyncId) {
     this._store.delete(asyncId);
+  }
+
+  /**
+   * @param {Object} [debug]
+   * @param {Boolean} [debug.hooks=false]
+   * @param {Boolean} [debug.methods=false]
+   */
+  _setupLogging({ debug }) {
+    if (debug.hooks) {
+      ['init', 'before', 'after', 'destroy'].forEach((callbackName) => {
+        const methodName = `_${callbackName}`;
+        const originalMethod = this[methodName].bind(this);
+
+        this[methodName] = (...args) => {
+          this._logHook(callbackName, ...args);
+          return originalMethod(...args);
+        };
+      });
+
+      this.log('AsyncContextStore -> hooks logging enabled.');
+    }
+
+    if (debug.methods) {
+      const originalGet = this.get.bind(this);
+
+      ['enable', 'disable', 'set', 'get'].forEach((methodName) => {
+        const originalMethod = this[methodName].bind(this);
+
+        this[methodName] = (...args) => {
+          const currentId = asyncHooks.executionAsyncId();
+          let logMsg = `[${currentId}] AsyncContextStore.${methodName}(${args})`;
+          let result;
+
+          if (methodName === 'set') {
+            logMsg += ` / previous=${originalGet(args[0])}`;
+            result = originalMethod(...args);
+          } else if (methodName === 'get') {
+            result = originalMethod(...args);
+            logMsg += ` -> ${result}`;
+          } else {
+            result = originalMethod(...args);
+          }
+
+          this.log(logMsg);
+
+          return result;
+        };
+      });
+      this.log('AsyncContextStore -> methods logging enabled.');
+    }
+  }
+
+  /**
+   * @param {String} callbackName
+   * @param {Number} asyncId
+   * @param {String} [type]
+   * @param {Number} [triggerAsyncId]
+   * @param {Object} [resource]
+   */
+  _logHook(...args) {
+    const callbackName = args[0];
+
+    if (callbackName === 'init') {
+      this.log(`AsyncResource.init -> triggerId=${args[3]}, type=${args[2]}, id=${args[1]}`);
+    } else {
+      this.log(`AsyncResource.${callbackName} -> id=${args[1]}`);
+    }
   }
 }
 
