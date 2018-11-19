@@ -99,27 +99,23 @@ class AsyncContextStore {
   /**
    * Lookups for a value in the chain going from the current context up to the root context.
    * @param {String} key
-   * @return {*} value
+   * @return {*|Symbol} value
    */
   get(key) {
-    let value;
     const currentId = asyncHooks.executionAsyncId();
     let currentStoreData = this._store.get(currentId);
-    let found = false;
 
     while (currentStoreData) {
       const { context, _parentId } = currentStoreData;
 
-      found = key in context;
-      if (found) {
-        value = context[key];
-        break;
+      if (key in context) {
+        return context[key];
       }
 
       currentStoreData = this._store.get(_parentId);
     }
 
-    return value;
+    return AsyncContextStore.NOT_FOUND;
   }
 
   /**
@@ -219,20 +215,20 @@ class AsyncContextStore {
 
         this[methodName] = (...args) => {
           const currentId = asyncHooks.executionAsyncId();
-          let logMsg = `[${currentId}] AsyncContextStore.${methodName}(${args})`;
+          let logArgs = [`[${currentId}] AsyncContextStore.${methodName}(${args})`];
           let result;
 
           if (methodName === 'set') {
-            logMsg += ` / previous=${originalGet(args[0])}`;
+            logArgs = [...logArgs, '/ previous=', originalGet(args[0])];
             result = originalMethod(...args);
           } else if (methodName === 'get') {
             result = originalMethod(...args);
-            logMsg += ` -> ${result}`;
+            logArgs = [...logArgs, '->', result];
           } else {
             result = originalMethod(...args);
           }
 
-          this.log(logMsg);
+          this.log(...logArgs);
 
           return result;
         };
@@ -259,5 +255,7 @@ class AsyncContextStore {
     }
   }
 }
+
+AsyncContextStore.NOT_FOUND = Symbol('NotFound');
 
 module.exports = AsyncContextStore;

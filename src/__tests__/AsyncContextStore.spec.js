@@ -135,18 +135,18 @@ describe('AsyncContextStore', () => {
         expect.assertions(5);
 
         asyncContextStore.set('depth-1', 42);
-        expect(asyncContextStore.get('depth-1')).toBeUndefined();
+        expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
 
         resolveAfter(10)
           .then(() => {
             asyncContextStore.set('depth-2', 43);
-            expect(asyncContextStore.get('depth-1')).toBeUndefined();
-            expect(asyncContextStore.get('depth-2')).toBeUndefined();
+            expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
+            expect(asyncContextStore.get('depth-2')).toBe(AsyncContextStore.NOT_FOUND);
             return resolveAfter(10);
           })
           .then(() => {
-            expect(asyncContextStore.get('depth-1')).toBeUndefined();
-            expect(asyncContextStore.get('depth-2')).toBeUndefined();
+            expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
+            expect(asyncContextStore.get('depth-2')).toBe(AsyncContextStore.NOT_FOUND);
             done();
           })
           .catch(done.fail);
