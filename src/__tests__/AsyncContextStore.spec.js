@@ -3,7 +3,7 @@ const AsyncContextStore = require('../AsyncContextStore');
 const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('AsyncContextStore', () => {
-  it('should be a class with the following API: enable(), disable(), set(), get(), log()', () => {
+  it('should be a class with the following API: enable(), disable(), set(), get(), log(), logTree()', () => {
     expect(AsyncContextStore).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.enable).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.disable).toBeInstanceOf(Function);

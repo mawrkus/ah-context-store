@@ -130,6 +130,28 @@ class AsyncContextStore {
   }
 
   /**
+   * @param {Number} asyncId
+   */
+  logTree(asyncId = asyncHooks.executionAsyncId()) {
+    let currentId = asyncId;
+    let currentStoreData = this._store.get(currentId);
+    let indent = ' ';
+
+    this.log(`[${currentId}] Async resources tree ->`);
+
+    while (currentStoreData) {
+      this.log(`${indent}${currentId}:`, currentStoreData);
+      indent += ' ';
+
+      const { _parentId } = currentStoreData;
+      currentId = _parentId;
+      currentStoreData = this._store.get(currentId);
+    }
+
+    this.log(`${indent}${currentId}:`, currentStoreData);
+  }
+
+  /**
    * Creates a new context, called when a class is constructed that has the possibility to emit an
    * asynchronous event.
    * @param {Number} asyncId
