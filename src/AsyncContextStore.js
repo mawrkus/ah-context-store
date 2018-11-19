@@ -84,13 +84,16 @@ class AsyncContextStore {
    * Saves a value in the current context.
    * @param {String} key
    * @param {*} value
-   * @return {*} value
    */
   set(key, value) {
     const currentId = asyncHooks.executionAsyncId();
-    const { context } = this._store.get(currentId);
-    context[key] = value;
-    return value;
+    const currentStoreData = this._store.get(currentId);
+
+    if (!currentStoreData) {
+      return;
+    }
+
+    currentStoreData.context[key] = value;
   }
 
   /**
@@ -100,11 +103,12 @@ class AsyncContextStore {
    */
   get(key) {
     let value;
-    let currentId = asyncHooks.executionAsyncId();
+    const currentId = asyncHooks.executionAsyncId();
+    let currentStoreData = this._store.get(currentId);
     let found = false;
 
-    while (currentId) {
-      const { context, _parentId } = this._store.get(currentId);
+    while (currentStoreData) {
+      const { context, _parentId } = currentStoreData;
 
       found = key in context;
       if (found) {
@@ -112,7 +116,7 @@ class AsyncContextStore {
         break;
       }
 
-      currentId = _parentId;
+      currentStoreData = this._store.get(_parentId);
     }
 
     return value;
@@ -211,6 +215,7 @@ class AsyncContextStore {
           return result;
         };
       });
+
       this.log('AsyncContextStore -> methods logging enabled.');
     }
   }

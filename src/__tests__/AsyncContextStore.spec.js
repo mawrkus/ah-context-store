@@ -46,7 +46,7 @@ describe('AsyncContextStore', () => {
     });
   });
 
-  describe('#set(key, value) and #get(key)', () => {
+  describe('#set(key, value) & #get(key)', () => {
     let asyncContextStore;
 
     afterEach(() => {
@@ -64,6 +64,8 @@ describe('AsyncContextStore', () => {
     it('should retrieve a value from an async context previously created (depth 1)', (done) => {
       asyncContextStore = new AsyncContextStore().enable();
 
+      expect.assertions(1);
+
       asyncContextStore.set('test', 42);
 
       resolveAfter(10)
@@ -76,6 +78,8 @@ describe('AsyncContextStore', () => {
 
     it('should retrieve values stored from multiple async contexts (depth 2)', (done) => {
       asyncContextStore = new AsyncContextStore().enable();
+
+      expect.assertions(2);
 
       asyncContextStore.set('depth-1', 42);
 
@@ -118,6 +122,31 @@ describe('AsyncContextStore', () => {
 
         Promise.all([request1P, request2P])
           .then(() => {
+            done();
+          })
+          .catch(done.fail);
+      });
+    });
+
+    describe('without enabling the async hooks', () => {
+      it('should have no effect', (done) => {
+        asyncContextStore = new AsyncContextStore();
+
+        expect.assertions(5);
+
+        asyncContextStore.set('depth-1', 42);
+        expect(asyncContextStore.get('depth-1')).toBeUndefined();
+
+        resolveAfter(10)
+          .then(() => {
+            asyncContextStore.set('depth-2', 43);
+            expect(asyncContextStore.get('depth-1')).toBeUndefined();
+            expect(asyncContextStore.get('depth-2')).toBeUndefined();
+            return resolveAfter(10);
+          })
+          .then(() => {
+            expect(asyncContextStore.get('depth-1')).toBeUndefined();
+            expect(asyncContextStore.get('depth-2')).toBeUndefined();
             done();
           })
           .catch(done.fail);
