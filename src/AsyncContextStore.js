@@ -67,7 +67,7 @@ class AsyncContextStore {
 
   /**
    * Disable listening for new asynchronous events and clears the contexts store.
-   * @param {Boolean} [clear=true]
+   * @param {Boolean} [clearAll=true]
    * @return {AsyncContextStore}
    */
   disable(clearAll = true) {
@@ -123,7 +123,7 @@ class AsyncContextStore {
   }
 
   /**
-   * @param {*}
+   * @param {*} args
    */
   log(...args) {
     fs.writeSync(FD_STDOUT, `${format(...args)}\n`);
