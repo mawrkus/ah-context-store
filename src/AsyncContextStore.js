@@ -123,7 +123,7 @@ class AsyncContextStore {
   }
 
   /**
-   * @param {*} args
+   * @param {...any} args
    */
   log(...args) {
     fs.writeSync(FD_STDOUT, `${format(...args)}\n`);
