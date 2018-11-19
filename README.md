@@ -93,9 +93,14 @@ class AsyncContextStore {
   get(key) {}
 
   /**
-   * @param {*}
+   * @param {...any}
    */
   log(...args) {}
+
+  /**
+   * @param {Number} [asyncId=asyncHooks.executionAsyncId()]
+   */
+  logTree(asyncId) {}
 }
 ```
 

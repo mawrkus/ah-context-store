@@ -130,7 +130,7 @@ class AsyncContextStore {
   }
 
   /**
-   * @param {Number} asyncId
+   * @param {Number} [asyncId=asyncHooks.executionAsyncId()]
    */
   logTree(asyncId = asyncHooks.executionAsyncId()) {
     let currentId = asyncId;
