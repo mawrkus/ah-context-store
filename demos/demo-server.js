@@ -1,14 +1,15 @@
 const hapi = require('hapi'); // eslint-disable-line import/no-extraneous-dependencies
 
-const asyncContextStore = require('./asyncContextStore');
-const middlewares = require('./middlewares');
-const routes = require('./routes');
-const { logSync, resolveAfter, randomUA } = require('./helpers');
+const asyncContextStore = require('./server/asyncContextStoreSingleton');
 
-process.on('unhandledRejection', (error) => {
-  logSync(error);
-  process.exit(1);
-});
+const middlewares = require('./server/middlewares');
+const routes = require('./server/routes');
+
+const userAgents = require('./server/ua');
+const { helpersFactory } = require('./helpers');
+
+const { resolveAfter } = helpersFactory(asyncContextStore);
+const randomUA = () => userAgents[Math.floor(Math.random() * userAgents.length)];
 
 (async () => {
   const server = new hapi.Server();
@@ -26,7 +27,7 @@ process.on('unhandledRejection', (error) => {
   await server.start();
 
   const requestsP = [];
-  let requestsCount = 10;
+  let requestsCount = 2;
 
   while (requestsCount >= 0) {
     requestsCount -= 1;
@@ -37,7 +38,7 @@ process.on('unhandledRejection', (error) => {
         headers: { 'user-agent': randomUA() },
       })
       .then((response) => {
-        logSync('Store size=', asyncContextStore.size);
+        asyncContextStore.log('Store size=', asyncContextStore.size);
         return response;
       });
 
@@ -46,12 +47,10 @@ process.on('unhandledRejection', (error) => {
 
   const responses = await Promise.all(requestsP);
 
-  logSync('All requests processed ->');
+  asyncContextStore.log('All requests processed ->');
 
   responses.forEach(({ payload, request }) => {
-    logSync('Request  ->', request.id, request.headers);
-    logSync('Response ->', payload);
+    asyncContextStore.log('Request  ->', request.id, request.headers);
+    asyncContextStore.log('Response ->', payload);
   });
-
-  asyncContextStore.logStore();
 })();

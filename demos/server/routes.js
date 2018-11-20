@@ -1,5 +1,9 @@
 const model = require('./model');
-const { logSync, resolveAfter } = require('./helpers');
+
+const { helpersFactory } = require('../helpers');
+const asyncContextStore = require('./asyncContextStoreSingleton');
+
+const { resolveAfter } = helpersFactory(asyncContextStore);
 
 async function routeController(request, h) {
   const modelData = await model({
@@ -18,7 +22,7 @@ module.exports = [{
         ext: {
           onPreAuth: {
             method: [async (request, h) => {
-              logSync(`Executing route.ext.onPreAuth(${request.id})...`);
+              h.asyncContextStore.log(`Executing route.ext.onPreAuth(${request.id})...`);
 
               await resolveAfter(100, `route.ext.onPreAuth(${request.id})`);
               h.asyncContextStore.get('request.id');
@@ -29,7 +33,7 @@ module.exports = [{
           },
         },
         pre: [async (request, h) => {
-          logSync(`Executing route.pre(${request.id})...`);
+          h.asyncContextStore.log(`Executing route.pre(${request.id})...`);
 
           await resolveAfter(100, `route.pre(${request.id})`);
           h.asyncContextStore.get('request.id');
@@ -39,7 +43,7 @@ module.exports = [{
         }],
       },
       async handler(request, h) {
-        logSync(`Executing route.handler(${request.id})...`);
+        h.asyncContextStore.log(`Executing route.handler(${request.id})...`);
         return routeController(request, h, resolveAfter);
       },
     });

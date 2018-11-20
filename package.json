@@ -8,8 +8,10 @@
     "pretest": "npm run lint",
     "test": "jest --coverage",
     "tdd": "jest --watch --verbose",
-    "predemo": "clear",
-    "demo": "nodemon demos/demo.js --watch src --watch demos",
+    "demo:async-await": "nodemon demos/demo-async-await.js --watch src --watch demos",
+    "demo:promises": "nodemon demos/demo-promises.js --watch src --watch demos",
+    "demo:server": "nodemon demos/demo-server.js --watch src --watch demos",
+    "build:demos": "rm -rf build && babel demos -d build --copy-files",
     "prerelease": "npm run test",
     "release": "npm version -m \"New version: %s\"",
     "postrelease": "npm run push && npm publish",
@@ -20,7 +22,23 @@
     "index.js"
   ],
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "10.13.0"
+          },
+          "useBuiltIns": "usage"
+        }
+      ]
+    ],
+    "plugins": [
+      "@babel/plugin-syntax-object-rest-spread"
+    ]
   },
   "jest": {
     "testPathIgnorePatterns": [
@@ -38,6 +56,12 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/node": "^7.0.0",
+    "@babel/plugin-syntax-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/register": "^7.0.0",
     "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",

@@ -14,24 +14,22 @@ const FD_STDOUT = 1;
  */
 class AsyncContextStore {
   /**
-   * @param {Object} [debug]
-   * @param {Boolean} [debug.hooks=false]
-   * @param {Boolean} [debug.methods=false]
+   * @param {Sring[]} [debug=[]] ['methods', 'hooks]
    */
-  constructor({ debug } = { debug: { hooks: false, methods: false } }) {
-    this._setupLogging({ debug });
-
+  constructor({ debug } = { debug: [] }) {
     this._contexts = {};
 
     this._asyncHooks = asyncHooks;
 
     this._hook = this._asyncHooks.createHook({
-      init: this._init.bind(this),
-      before: this._before.bind(this),
-      after: this._after.bind(this),
-      destroy: this._destroy.bind(this),
-      promiseResolve: this._promiseResolve.bind(this),
+      init: (...args) => this._init(...args),
+      before: (...args) => this._before(...args),
+      after: (...args) => this._after(...args),
+      destroy: (...args) => this._destroy(...args),
+      promiseResolve: (...args) => this._promiseResolve(...args),
     });
+
+    this._setupLogging({ debug });
   }
 
   /**
@@ -49,80 +47,86 @@ class AsyncContextStore {
   }
 
   /**
-   * Allow callbacks of the AsyncHook instance to call, clears the contexts store.
-   * @return {AsyncContextStore}
    */
   enable() {
     this._contexts = {};
     this._hook.enable();
-    return this;
   }
 
   /**
-   * Disable listening for new asynchronous events, clears the contexts store.
-   * @return {AsyncContextStore}
    */
   disable() {
     this._hook.disable();
     this._contexts = {};
-    return this;
   }
 
   /**
-   * Saves a value in the current context.
    * @param {String} key
    * @param {*} value
    */
   set(key, value) {
     const currentId = this._asyncHooks.executionAsyncId();
+    const currentContext = this._contexts[currentId];
 
-    if (!(currentId in this._contexts)) {
-      this._contexts[currentId] = {};
+    if (!currentContext) {
+      this._contexts[currentId] = {
+        parentId: null,
+        data: {},
+      };
     }
 
-    this._contexts[currentId][key] = value;
+    this._contexts[currentId].data[key] = value;
   }
 
   /**
-   * Retrieves a value from the current context.
    * @param {String} key
-   * @return {*|Symbol} value
+   * @return {*} value
    */
   get(key) {
     const currentId = this._asyncHooks.executionAsyncId();
-    const currentContext = this._contexts[currentId];
+    let currentContext = this._contexts[currentId];
+    let value;
 
-    if (currentContext && key in currentContext) {
-      return currentContext[key];
+    while (currentContext) {
+      const { parentId, data } = currentContext;
+
+      if (key in data) {
+        value = data[key];
+        break;
+      }
+
+      currentContext = this._contexts[parentId];
     }
 
-    return AsyncContextStore.NOT_FOUND;
+    return value;
   }
 
   /**
-   * Helper.
    * @param {...any} args
+   * @return {AsyncContextStore} this
    */
   log(...args) {
-    fs.writeSync(FD_STDOUT, `${format(...args)}\n`);
+    const currentId = this._asyncHooks.executionAsyncId();
+    fs.writeSync(FD_STDOUT, `[${currentId}] ${format(...args)}\n`);
+    return this;
   }
 
   /**
-   * Helper.
+   * @return {AsyncContextStore} this
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
   logContext(asyncId = this._asyncHooks.executionAsyncId()) {
     const currentContext = this._contexts[asyncId];
-    this.log(`[${asyncId}] Async context ->`, currentContext);
+    this.log(`Async context [${asyncId}] ->`, currentContext);
+    return this;
   }
 
   /**
-   * Helper.
-   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   * @return {AsyncContextStore} this
    */
   logStore() {
-    this.log('%d context(s) in store ->', this.size);
-    this.log(this.store);
+    this.log(`${this.size} context(s) in store ->`, this.store);
+    return this;
   }
 
   /**
@@ -134,16 +138,12 @@ class AsyncContextStore {
    * @param {Object} resource
    */
   _init(asyncId, type, triggerAsyncId/* , resource */) {
-    const currentId = type === 'PROMISE'
-      ? this._asyncHooks.executionAsyncId()
-      : triggerAsyncId;
+    const parentId = triggerAsyncId/* || this._asyncHooks.executionAsyncId() */;
 
-    if (currentId in this._contexts) {
-      this._contexts[asyncId] = {
-        _parentId: currentId,
-        ...this._contexts[currentId],
-      };
-    }
+    this._contexts[asyncId] = {
+      parentId,
+      data: {},
+    };
   }
 
   /**
@@ -170,19 +170,14 @@ class AsyncContextStore {
   /**
    * @param {Number} asyncId
    */
-  _promiseResolve(asyncId) {
-    if (asyncId in this._contexts) {
-      delete this._contexts[asyncId];
-    }
+  _promiseResolve(/* asyncId */) {
   }
 
   /**
-   * @param {Object} [debug]
-   * @param {Boolean} [debug.hooks=false]
-   * @param {Boolean} [debug.methods=false]
+   * @param {String[]} debug ['hooks', 'methods']
    */
   _setupLogging({ debug }) {
-    if (debug.hooks) {
+    if (debug.includes('hooks')) {
       ['init', 'before', 'after', 'destroy', 'promiseResolve'].forEach((callbackName) => {
         const methodName = `_${callbackName}`;
         const originalMethod = this[methodName].bind(this);
@@ -196,29 +191,13 @@ class AsyncContextStore {
       this.log('AsyncContextStore -> hooks logging enabled.');
     }
 
-    if (debug.methods) {
-      const originalGet = this.get.bind(this);
-
+    if (debug.includes('methods')) {
       ['enable', 'disable', 'set', 'get'].forEach((methodName) => {
         const originalMethod = this[methodName].bind(this);
 
         this[methodName] = (...args) => {
-          const currentId = this._asyncHooks.executionAsyncId();
-          let logArgs = [`[${currentId}] AsyncContextStore.${methodName}(${args})`];
-          let result;
-
-          if (methodName === 'set') {
-            logArgs = [...logArgs, '/ previous=', originalGet(args[0])];
-            result = originalMethod(...args);
-          } else if (methodName === 'get') {
-            result = originalMethod(...args);
-            logArgs = [...logArgs, '->', result];
-          } else {
-            result = originalMethod(...args);
-          }
-
-          this.log(...logArgs);
-
+          const result = originalMethod(...args);
+          this.log(`AsyncContextStore.${methodName}(${args}) ->`, result);
           return result;
         };
       });
@@ -235,17 +214,14 @@ class AsyncContextStore {
    * @param {Object} [resource]
    */
   _logHook(...args) {
-    const currentId = this._asyncHooks.executionAsyncId();
     const callbackName = args[0];
 
     if (callbackName === 'init') {
-      this.log(`[${currentId}] AsyncResource.init -> triggerId=${args[3]}, type=${args[2]}, id=${args[1]}`);
+      this.log(`* init: ${args[3]} -> ${args[1]} (${args[2]})`);
     } else {
-      this.log(`[${currentId}] AsyncResource.${callbackName} -> id=${args[1]}`);
+      this.log(`* ${callbackName} ${args[1]}`);
     }
   }
 }
-
-AsyncContextStore.NOT_FOUND = Symbol('NotFound');
 
 module.exports = AsyncContextStore;

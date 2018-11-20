@@ -18,7 +18,8 @@ const AsyncContextStore = require('async-context-store');
 const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 (async () => {
-  const asyncContextStore = new AsyncContextStore().enable();
+  const asyncContextStore = new AsyncContextStore();
+  asyncContextStore.enable();
 
   const request1P = resolveAfter(10)
     .then(async () => {
@@ -36,7 +37,8 @@ const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   await Promise.all([request1P, request2P]);
 
-  asyncContextStore.disable(false).logStore();
+  asyncContextStore.logStore();
+  asyncContextStore.disable(false);
 })();
 ```
 
@@ -45,11 +47,9 @@ const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 ```javascript
 class AsyncContextStore {
   /**
-   * @param {Object} [debug]
-   * @param {Boolean} [debug.hooks=false]
-   * @param {Boolean} [debug.methods=false]
+   * @param {Sring[]} [debug=[]] ['methods', 'hooks]
    */
-  constructor({ debug } = { debug: { hooks: false, methods: false } })
+  constructor({ debug } = { debug: [] })
 
   /**
    * @return {Number} Number of contexts currently stored.
@@ -62,52 +62,42 @@ class AsyncContextStore {
   get store()
 
   /**
-   * Allow callbacks of the AsyncHook instance to call, clears the contexts store.
-   * @return {AsyncContextStore}
    */
   enable()
 
   /**
-   * Disable listening for new asynchronous events, clears the contexts store.
-   * @return {AsyncContextStore}
    */
   disable()
 
   /**
-   * Saves a value in the current context.
    * @param {String} key
    * @param {*} value
    */
   set(key, value)
 
   /**
-   * Retrieves a value from the current context.
    * @param {String} key
-   * @return {*|Symbol} value
+   * @return {*} value
    */
   get(key)
 
   /**
-   * Helper.
    * @param {...any} args
+   * @return {AsyncContextStore} this
    */
   log(...args)
 
   /**
-   * Helper.
+   * @return {AsyncContextStore} this
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
   logContext(asyncId = this._asyncHooks.executionAsyncId())
 
   /**
-   * Helper.
-   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   * @return {AsyncContextStore} this
    */
   logStore()
-}
-
-AsyncContextStore.NOT_FOUND = Symbol('NotFound');
-```
+  ```
 
 ## 🔗 Demo
 
