@@ -4,10 +4,8 @@ const { helpersFactory } = require('./helpers');
 const demos = require('./promises');
 
 const asyncContextStore = new AsyncContextStore({
-  debug: ['methods'],
-});
-
-asyncContextStore.enable();
+  debug: ['methods', 'hooks'],
+}).enable();
 
 const { resolveAfter } = helpersFactory(asyncContextStore);
 

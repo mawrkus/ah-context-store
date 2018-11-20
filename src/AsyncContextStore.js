@@ -14,7 +14,7 @@ const FD_STDOUT = 1;
  */
 class AsyncContextStore {
   /**
-   * @param {Sring[]} [debug=[]] ['methods', 'hooks]
+   * @param {String[]} [debug=[]] ['methods', 'hooks]
    */
   constructor({ debug } = { debug: [] }) {
     this._contexts = {};
@@ -47,35 +47,42 @@ class AsyncContextStore {
   }
 
   /**
+   * @return {AsyncContextStore} this
    */
   enable() {
     this._contexts = {};
     this._hook.enable();
+    return this;
   }
 
   /**
+   * @return {AsyncContextStore} this
    */
   disable() {
     this._hook.disable();
     this._contexts = {};
+    return this;
   }
 
   /**
    * @param {String} key
    * @param {*} value
+   * @return {AsyncContextStore} this
    */
   set(key, value) {
     const currentId = this._asyncHooks.executionAsyncId();
-    const currentContext = this._contexts[currentId];
+    let currentContext = this._contexts[currentId];
 
     if (!currentContext) {
-      this._contexts[currentId] = {
-        parentId: null,
+      currentContext = this._contexts[currentId] = { // eslint-disable-line no-multi-assign
+        parentId: this._asyncHooks.triggerAsyncId(),
         data: {},
       };
     }
 
-    this._contexts[currentId].data[key] = value;
+    currentContext.data[key] = value;
+
+    return this;
   }
 
   /**
@@ -84,49 +91,11 @@ class AsyncContextStore {
    */
   get(key) {
     const currentId = this._asyncHooks.executionAsyncId();
-    let currentContext = this._contexts[currentId];
-    let value;
+    const currentContext = this._contexts[currentId];
 
-    while (currentContext) {
-      const { parentId, data } = currentContext;
-
-      if (key in data) {
-        value = data[key];
-        break;
-      }
-
-      currentContext = this._contexts[parentId];
-    }
-
-    return value;
-  }
-
-  /**
-   * @param {...any} args
-   * @return {AsyncContextStore} this
-   */
-  log(...args) {
-    const currentId = this._asyncHooks.executionAsyncId();
-    fs.writeSync(FD_STDOUT, `[${currentId}] ${format(...args)}\n`);
-    return this;
-  }
-
-  /**
-   * @return {AsyncContextStore} this
-   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
-   */
-  logContext(asyncId = this._asyncHooks.executionAsyncId()) {
-    const currentContext = this._contexts[asyncId];
-    this.log(`Async context [${asyncId}] ->`, currentContext);
-    return this;
-  }
-
-  /**
-   * @return {AsyncContextStore} this
-   */
-  logStore() {
-    this.log(`${this.size} context(s) in store ->`, this.store);
-    return this;
+    return currentContext && (key in currentContext.data)
+      ? currentContext.data[key]
+      : undefined;
   }
 
   /**
@@ -139,10 +108,11 @@ class AsyncContextStore {
    */
   _init(asyncId, type, triggerAsyncId/* , resource */) {
     const parentId = triggerAsyncId/* || this._asyncHooks.executionAsyncId() */;
+    const parentContext = this._contexts[parentId];
 
     this._contexts[asyncId] = {
       parentId,
-      data: {},
+      data: parentContext ? parentContext.data : {},
     };
   }
 
@@ -174,16 +144,56 @@ class AsyncContextStore {
   }
 
   /**
+   * @param {...any} args
+   * @return {AsyncContextStore} this
+   */
+  log(...args) {
+    fs.writeSync(FD_STDOUT, `${format(...args)}\n`);
+    return this;
+  }
+
+  /**
+   * @return {AsyncContextStore} this
+   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   */
+  logContext(asyncId = this._asyncHooks.executionAsyncId()) {
+    const currentContext = this._contexts[asyncId];
+    this.log(`Async context [${asyncId}] ->`, currentContext);
+    return this;
+  }
+
+  /**
+   * @return {AsyncContextStore} this
+   */
+  logStore() {
+    this.log(`${this.size} context(s) in store ->`);
+    this.log(this.store);
+    return this;
+  }
+
+  /**
    * @param {String[]} debug ['hooks', 'methods']
    */
   _setupLogging({ debug }) {
     if (debug.includes('hooks')) {
-      ['init', 'before', 'after', 'destroy', 'promiseResolve'].forEach((callbackName) => {
+      const originalInitMethod = this._init.bind(this);
+      this._init = (...args) => {
+        this.log(` * init: ${args[2]} -> ${args[0]} (${args[1]})`);
+        return originalInitMethod(...args);
+      };
+
+      const logSymbols = {
+        before: '>',
+        after: '<',
+        destroy: 'x',
+        promiseResolve: 'v',
+      };
+
+      ['before', 'after', 'destroy', 'promiseResolve'].forEach((callbackName) => {
         const methodName = `_${callbackName}`;
         const originalMethod = this[methodName].bind(this);
-
         this[methodName] = (...args) => {
-          this._logHook(callbackName, ...args);
+          this.log(` ${logSymbols[callbackName]} ${callbackName} ${args[0]}`);
           return originalMethod(...args);
         };
       });
@@ -192,34 +202,27 @@ class AsyncContextStore {
     }
 
     if (debug.includes('methods')) {
-      ['enable', 'disable', 'set', 'get'].forEach((methodName) => {
+      ['enable', 'disable', 'set'].forEach((methodName) => {
+        const originalMethod = this[methodName].bind(this);
+        this[methodName] = (...args) => {
+          const currentId = this._asyncHooks.executionAsyncId();
+          this.log(`[${currentId}] AsyncContextStore.${methodName}(${args})`);
+          return originalMethod(...args);
+        };
+      });
+
+      ['get'].forEach((methodName) => {
         const originalMethod = this[methodName].bind(this);
 
         this[methodName] = (...args) => {
+          const currentId = this._asyncHooks.executionAsyncId();
           const result = originalMethod(...args);
-          this.log(`AsyncContextStore.${methodName}(${args}) ->`, result);
+          this.log(`[${currentId}] AsyncContextStore.${methodName}(${args}) ->`, result);
           return result;
         };
       });
 
       this.log('AsyncContextStore -> methods logging enabled.');
-    }
-  }
-
-  /**
-   * @param {String} callbackName
-   * @param {Number} asyncId
-   * @param {String} [type]
-   * @param {Number} [triggerAsyncId]
-   * @param {Object} [resource]
-   */
-  _logHook(...args) {
-    const callbackName = args[0];
-
-    if (callbackName === 'init') {
-      this.log(`* init: ${args[3]} -> ${args[1]} (${args[2]})`);
-    } else {
-      this.log(`* ${callbackName} ${args[1]}`);
     }
   }
 }

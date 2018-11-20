@@ -47,57 +47,60 @@ const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 ```javascript
 class AsyncContextStore {
   /**
-   * @param {Sring[]} [debug=[]] ['methods', 'hooks]
+   * @param {String[]} [debug=[]] ['methods', 'hooks]
    */
-  constructor({ debug } = { debug: [] })
+  constructor({ debug } = { debug: [] }) {}
 
   /**
    * @return {Number} Number of contexts currently stored.
    */
-  get size()
+  get size() {}
 
   /**
    * @return {Object}
    */
-  get store()
+  get store() {}
 
   /**
+   * @return {AsyncContextStore} this
    */
-  enable()
+  enable() {}
 
   /**
+   * @return {AsyncContextStore} this
    */
-  disable()
+  disable() {}
 
   /**
    * @param {String} key
    * @param {*} value
+   * @return {AsyncContextStore} this
    */
-  set(key, value)
+  set(key, value) {}
 
   /**
    * @param {String} key
    * @return {*} value
    */
-  get(key)
+  get(key) {}
 
   /**
    * @param {...any} args
    * @return {AsyncContextStore} this
    */
-  log(...args)
+  log(...args) {}
 
   /**
    * @return {AsyncContextStore} this
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
-  logContext(asyncId = this._asyncHooks.executionAsyncId())
+  logContext(asyncId = this._asyncHooks.executionAsyncId()) {}
 
   /**
    * @return {AsyncContextStore} this
    */
-  logStore()
-  ```
+  logStore() {}
+```
 
 ## 🔗 Demo
 

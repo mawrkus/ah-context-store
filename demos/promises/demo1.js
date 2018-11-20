@@ -1,12 +1,17 @@
+const assert = require('assert').strict;
+
 async function asyncDemo({ asyncContextStore, resolveAfter }) {
-  asyncContextStore.set('request.id', 42);
-  asyncContextStore.logStore();
+  asyncContextStore.log('- -- --- promises: demo1 --- -- -');
+
+  asyncContextStore.set('request.id', 42).logStore();
 
   resolveAfter(10, 'timer')
     .then(() => {
       asyncContextStore.logStore();
-      asyncContextStore.get('request.id');
-      asyncContextStore.disable();
+      assert.strictEqual(42, asyncContextStore.get('request.id'));
+    })
+    .then(() => {
+      asyncContextStore.logStore().disable();
     });
 }
 
