@@ -3,46 +3,44 @@ const AsyncContextStore = require('../AsyncContextStore');
 const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('AsyncContextStore', () => {
-  it('should be a class with the following API: enable(), disable(), set(), get(), log(), logTree()', () => {
+  it('should be a class with the following API: enable(), disable(), set(), get(), log(), logContext(), logStore()', () => {
     expect(AsyncContextStore).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.enable).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.disable).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.set).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.get).toBeInstanceOf(Function);
     expect(AsyncContextStore.prototype.log).toBeInstanceOf(Function);
+    expect(AsyncContextStore.prototype.logContext).toBeInstanceOf(Function);
+    expect(AsyncContextStore.prototype.logStore).toBeInstanceOf(Function);
   });
 
-  it('should expose the "size" and "data" properties', () => {
+  it('should expose the "size" and "store" properties', () => {
     const asyncContextStore = new AsyncContextStore();
 
     expect(asyncContextStore.size).toEqual(expect.any(Number));
-    expect(asyncContextStore.data).toBeInstanceOf(Map);
+    expect(asyncContextStore.store).toBeInstanceOf(Object);
   });
 
   describe('#enable(createRootContext)', () => {
-    it('should create a new root context', () => {
+    it('should clear the store', () => {
       const asyncContextStore = new AsyncContextStore();
-      expect(asyncContextStore.size).toBe(0);
 
       asyncContextStore.enable();
-      expect(asyncContextStore.size).toBe(1);
 
-      const rootContext = asyncContextStore.data.values().next().value;
-
-      expect(rootContext).toEqual({
-        _parentId: null,
-        context: {},
-      });
+      expect(asyncContextStore.size).toBe(0);
+      expect(asyncContextStore.store).toEqual({});
     });
   });
 
   describe('#disable(clearAll)', () => {
-    it('should clears all the contexts previously created', () => {
-      const asyncContextStore = new AsyncContextStore().enable();
+    it('should clear the store', () => {
+      const asyncContextStore = new AsyncContextStore();
 
+      asyncContextStore.enable();
       asyncContextStore.disable();
 
       expect(asyncContextStore.size).toBe(0);
+      expect(asyncContextStore.store).toEqual({});
     });
   });
 
@@ -61,95 +59,55 @@ describe('AsyncContextStore', () => {
       expect(asyncContextStore.get('test')).toBe(42);
     });
 
-    it('should retrieve a value from an async context previously created (depth 1)', (done) => {
+    it('should retrieve a value from an async context previously created (depth 1)', async () => {
       asyncContextStore = new AsyncContextStore().enable();
 
       expect.assertions(1);
 
       asyncContextStore.set('test', 42);
+      await resolveAfter(10);
 
-      resolveAfter(10)
-        .then(() => {
-          expect(asyncContextStore.get('test')).toBe(42);
-          done();
-        })
-        .catch(done.fail);
+      expect(asyncContextStore.get('test')).toBe(42);
     });
 
-    it('should retrieve values stored from multiple async contexts (depth 2)', (done) => {
+    it('should retrieve values stored from multiple async contexts (depth 2)', async () => {
       asyncContextStore = new AsyncContextStore().enable();
 
       expect.assertions(2);
 
       asyncContextStore.set('depth-1', 42);
+      await resolveAfter(10);
 
-      resolveAfter(10)
-        .then(() => {
-          asyncContextStore.set('depth-2', 43);
-          return resolveAfter(10);
-        })
-        .then(() => {
-          expect(asyncContextStore.get('depth-1')).toBe(42);
-          expect(asyncContextStore.get('depth-2')).toBe(43);
-          done();
-        })
-        .catch(done.fail);
+      asyncContextStore.set('depth-2', 43);
+      await resolveAfter(10);
+
+      expect(asyncContextStore.get('depth-1')).toBe(42);
+      expect(asyncContextStore.get('depth-2')).toBe(43);
     });
 
     describe('a more complex scenario', () => {
-      it('should retrieve all values stored properly', (done) => {
+      it('should retrieve all values stored properly', async () => {
         asyncContextStore = new AsyncContextStore().enable();
 
         expect.assertions(2);
 
         const request1P = resolveAfter(10)
-          .then(() => {
+          .then(async () => {
             asyncContextStore.set('request-id', 42);
-            return resolveAfter(100);
-          })
-          .then(() => {
+            await resolveAfter(100);
+
             expect(asyncContextStore.get('request-id')).toBe(42);
           });
 
         const request2P = resolveAfter(20)
-          .then(() => {
+          .then(async () => {
             asyncContextStore.set('request-id', 43);
-            return resolveAfter(20);
-          })
-          .then(() => {
+            await resolveAfter(20);
+
             expect(asyncContextStore.get('request-id')).toBe(43);
           });
 
-        Promise.all([request1P, request2P])
-          .then(() => {
-            done();
-          })
-          .catch(done.fail);
-      });
-    });
-
-    describe('without enabling the async hooks', () => {
-      it('should have no effect', (done) => {
-        asyncContextStore = new AsyncContextStore();
-
-        expect.assertions(5);
-
-        asyncContextStore.set('depth-1', 42);
-        expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
-
-        resolveAfter(10)
-          .then(() => {
-            asyncContextStore.set('depth-2', 43);
-            expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
-            expect(asyncContextStore.get('depth-2')).toBe(AsyncContextStore.NOT_FOUND);
-            return resolveAfter(10);
-          })
-          .then(() => {
-            expect(asyncContextStore.get('depth-1')).toBe(AsyncContextStore.NOT_FOUND);
-            expect(asyncContextStore.get('depth-2')).toBe(AsyncContextStore.NOT_FOUND);
-            done();
-          })
-          .catch(done.fail);
+        await Promise.all([request1P, request2P]);
       });
     });
   });

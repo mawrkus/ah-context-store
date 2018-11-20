@@ -21,28 +21,22 @@ const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
   const asyncContextStore = new AsyncContextStore().enable();
 
   const request1P = resolveAfter(10)
-    .then(() => {
+    .then(async () => {
       asyncContextStore.set('request-id', 42);
-      return resolveAfter(100);
-    })
-    .then(() => {
-      asyncContextStore.log(asyncContextStore.get('request-id') === 42); // true
+      await resolveAfter(100);
+      asyncContextStore.get('request-id') === 42; // true
     });
 
   const request2P = resolveAfter(20)
-    .then(() => {
+    .then(async () => {
       asyncContextStore.set('request-id', 43);
-      return resolveAfter(20);
-    })
-    .then(() => {
-      asyncContextStore.log(asyncContextStore.get('request-id') === 43); // true
+      await resolveAfter(20);
+      asyncContextStore.get('request-id') === 43; // true
     });
 
   await Promise.all([request1P, request2P]);
 
-  asyncContextStore.disable(false);
-  asyncContextStore.log('Data ->', asyncContextStore.data);
-  asyncContextStore.log('# of items ->', asyncContextStore.size);
+  asyncContextStore.disable(false).logStore();
 })();
 ```
 
@@ -55,53 +49,61 @@ class AsyncContextStore {
    * @param {Boolean} [debug.hooks=false]
    * @param {Boolean} [debug.methods=false]
    */
-  constructor({ debug } = { debug: { hooks: false, methods: false } }) {}
+  constructor({ debug } = { debug: { hooks: false, methods: false } })
 
   /**
-   * @return {Number} Number of elements
+   * @return {Number} Number of contexts
    */
-  get size() {}
+  get size()
 
   /**
-   * @return {Map}
+   * @return {Object}
    */
-  get data() {}
+  get store()
 
   /**
-   * @param {Boolean} [createRootContext=true]
+   * Allow callbacks of the AsyncHook instance to call.
    * @return {AsyncContextStore}
    */
-  enable(createRootContext = true) {}
+  enable()
 
   /**
-   * @param {Boolean} [clear=true]
+   * Disable listening for new asynchronous events and clears the contexts store.
    * @return {AsyncContextStore}
    */
-  disable(clearAll = true) {}
+  disable()
 
   /**
+   * Saves a value in the current context.
    * @param {String} key
    * @param {*} value
-   * @return {*} value
    */
-  set(key, value) {}
+  set(key, value)
 
   /**
+   * Lookups for a value in the chain going from the current context up to the root context.
    * @param {String} key
-   * @return {*} value
+   * @return {*|Symbol} value
    */
-  get(key) {}
+  get(key)
 
   /**
-   * @param {...any}
+   * @param {...any} args
    */
-  log(...args) {}
+  log(...args)
 
   /**
-   * @param {Number} [asyncId=asyncHooks.executionAsyncId()]
+   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
-  logTree(asyncId) {}
+  logContext(asyncId = this._asyncHooks.executionAsyncId())
+
+  /**
+   * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   */
+  logStore()
 }
+
+AsyncContextStore.NOT_FOUND = Symbol('NotFound');
 ```
 
 ## 🔗 Demo

@@ -2,19 +2,19 @@
   "name": "async-context-store",
   "version": "0.1.0",
   "description": "A context storage for async resources",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
     "lint": "eslint src",
     "pretest": "npm run lint",
     "test": "jest --coverage",
     "tdd": "jest --watch --verbose",
-    "demo": "nodemon demo.js --watch src",
+    "predemo": "clear",
+    "demo": "nodemon demos/demo.js --watch src --watch demos",
     "prerelease": "npm run test",
     "release": "npm version -m \"New version: %s\"",
     "postrelease": "npm run push && npm publish",
     "push": "git push origin master && git push origin --tags"
   },
-  "main": "index.js",
   "files": [
     "src",
     "index.js"
@@ -42,6 +42,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jest": "^22.0.0",
+    "hapi": "^17.7.0",
     "jest": "^23.6.0",
     "nodemon": "^1.18.6"
   }
