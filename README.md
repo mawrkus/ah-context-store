@@ -52,7 +52,7 @@ class AsyncContextStore {
   constructor({ debug } = { debug: { hooks: false, methods: false } })
 
   /**
-   * @return {Number} Number of contexts
+   * @return {Number} Number of contexts currently stored.
    */
   get size()
 
@@ -62,13 +62,13 @@ class AsyncContextStore {
   get store()
 
   /**
-   * Allow callbacks of the AsyncHook instance to call.
+   * Allow callbacks of the AsyncHook instance to call, clears the contexts store.
    * @return {AsyncContextStore}
    */
   enable()
 
   /**
-   * Disable listening for new asynchronous events and clears the contexts store.
+   * Disable listening for new asynchronous events, clears the contexts store.
    * @return {AsyncContextStore}
    */
   disable()
@@ -81,23 +81,26 @@ class AsyncContextStore {
   set(key, value)
 
   /**
-   * Lookups for a value in the chain going from the current context up to the root context.
+   * Retrieves a value from the current context.
    * @param {String} key
    * @return {*|Symbol} value
    */
   get(key)
 
   /**
+   * Helper.
    * @param {...any} args
    */
   log(...args)
 
   /**
+   * Helper.
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
   logContext(asyncId = this._asyncHooks.executionAsyncId())
 
   /**
+   * Helper.
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
    */
   logStore()
@@ -107,6 +110,8 @@ AsyncContextStore.NOT_FOUND = Symbol('NotFound');
 ```
 
 ## 🔗 Demo
+
+Demo based on [Hapi v17](https://hapijs.com/api/17.7.0), to illustrate HTTP request tracing.
 
 Clone the project...
 
