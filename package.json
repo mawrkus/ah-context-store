@@ -1,7 +1,7 @@
 {
   "name": "ah-context-store",
   "version": "0.1.0",
-  "description": "A context storage for async resources",
+  "description": "A context storage for async resources, based on Node.js Async Hooks API",
   "main": "index.js",
   "scripts": {
     "lint": "eslint src",

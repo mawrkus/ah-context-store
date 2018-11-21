@@ -1,6 +1,6 @@
 # Async Context Store
 
-A context storage for async resources, based on the Node.js [async_hooks](https://nodejs.org/api/async_hooks.html) package.
+A context storage for async resources, based on the Node.js [Async Hooks API](https://nodejs.org/api/async_hooks.html).
 
 ## 🔗 Installation (not yet published)
 
