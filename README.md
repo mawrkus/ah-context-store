@@ -2,10 +2,10 @@
 
 A context storage for async resources, based on the Node.js [async_hooks](https://nodejs.org/api/async_hooks.html) package.
 
-## 🔗 Installation
+## 🔗 Installation (not yet published)
 
 ```shell
-$ npm install async-context-store
+$ npm install async-context-store // soon...
 ```
 
 ## 🔗 Usage
@@ -15,30 +15,38 @@ $ npm install async-context-store
 ```javascript
 const AsyncContextStore = require('async-context-store');
 
+const asyncContextStore = new AsyncContextStore().enable();
+
 const resolveAfter = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+function handleRequest(requestId) {
+  return resolveAfter(10, `handle(${requestId})`)
+    .then(() => {
+      asyncContextStore.logStore();
+      assert.strictEqual(requestId, asyncContextStore.get('request.id'));
+    });
+}
+
 (async () => {
-  const asyncContextStore = new AsyncContextStore();
-  asyncContextStore.enable();
-
-  const request1P = resolveAfter(10)
-    .then(async () => {
-      asyncContextStore.set('request-id', 42);
-      await resolveAfter(100);
-      asyncContextStore.get('request-id') === 42; // true
+  const request1P = resolveAfter(10, 'request1')
+    .then(() => {
+      asyncContextStore.set('request.id', 42).logStore();
+      assert.strictEqual(42, asyncContextStore.get('request.id'));
+      return handleRequest(42);
     });
 
-  const request2P = resolveAfter(20)
-    .then(async () => {
-      asyncContextStore.set('request-id', 43);
-      await resolveAfter(20);
-      asyncContextStore.get('request-id') === 43; // true
+  const request2P = resolveAfter(10, 'request2')
+    .then(() => {
+      asyncContextStore.set('request.id', 69).logStore();
+      assert.strictEqual(69, asyncContextStore.get('request.id'));
+      return handleRequest(69);
     });
 
-  await Promise.all([request1P, request2P]);
-
-  asyncContextStore.logStore();
-  asyncContextStore.disable(false);
+  return Promise.all([request1P, request2P])
+    .then(() => {
+      assert.strictEqual(undefined, asyncContextStore.get('request.id'));
+      asyncContextStore.logStore().disable();
+    });
 })();
 ```
 
@@ -102,9 +110,11 @@ class AsyncContextStore {
   logStore() {}
 ```
 
-## 🔗 Demo
+## 🔗 Demos
 
-Demo based on [Hapi v17](https://hapijs.com/api/17.7.0), to illustrate HTTP request tracing.
+- Promise-based demos.
+- `async-await` demos.
+- [Hapi v17](https://hapijs.com/api/17.7.0) demo, to illustrate HTTP request tracing.
 
 Clone the project...
 
@@ -112,5 +122,10 @@ Clone the project...
 $ git clone https://github.com/mawrkus/async-context-store.git
 $ cd async-context-store
 $ npm install
-$ npm run demo
+
+$ npm run demo:async-await
+$ npm run demo:promises
+$ npm run demo:server
+
+$ ./demos/server/stress my-agent
 ```
