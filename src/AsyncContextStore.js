@@ -161,8 +161,8 @@ class AsyncContextStore {
   }
 
   /**
-   * @return {AsyncContextStore} this
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   * @return {AsyncContextStore} this
    */
   logContext(asyncId = this._asyncHooks.executionAsyncId()) {
     const currentContext = this._contexts[asyncId];

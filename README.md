@@ -91,8 +91,8 @@ class AsyncContextStore {
   log(...args) {}
 
   /**
-   * @return {AsyncContextStore} this
    * @param {Number} [asyncId=this._asyncHooks.executionAsyncId()]
+   * @return {AsyncContextStore} this
    */
   logContext(asyncId = this._asyncHooks.executionAsyncId()) {}
 
