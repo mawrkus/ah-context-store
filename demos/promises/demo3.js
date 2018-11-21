@@ -1,6 +1,6 @@
 const assert = require('assert').strict;
 
-async function asyncDemo({ asyncContextStore, resolveAfter }) {
+function asyncDemo({ asyncContextStore, resolveAfter }) {
   asyncContextStore.log('- -- --- promises: demo3 --- -- -');
 
   function handleRequest(requestId) {
@@ -25,11 +25,9 @@ async function asyncDemo({ asyncContextStore, resolveAfter }) {
       return handleRequest(69);
     });
 
-  Promise.all([request1P, request2P])
+  return Promise.all([request1P, request2P])
     .then(() => {
       assert.strictEqual(undefined, asyncContextStore.get('request.id'));
-    })
-    .then(() => {
       asyncContextStore.logStore().disable();
     });
 }

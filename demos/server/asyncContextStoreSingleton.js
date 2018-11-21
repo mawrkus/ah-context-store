@@ -2,8 +2,6 @@ const AsyncContextStore = require('../..');
 
 const asyncContextStore = new AsyncContextStore({
   debug: ['methods'],
-});
-
-asyncContextStore.enable();
+}).enable();
 
 module.exports = asyncContextStore;

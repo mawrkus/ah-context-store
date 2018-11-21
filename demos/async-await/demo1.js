@@ -1,13 +1,18 @@
+const assert = require('assert').strict;
+
 async function asyncDemo({ asyncContextStore, resolveAfter }) {
-  asyncContextStore.set('request.id', 42);
-  asyncContextStore.logStore();
+  asyncContextStore.log('- -- --- async/await: demo1 --- -- -');
+
+  asyncContextStore.set('request.id', 42).logStore();
 
   await resolveAfter(10, 'timer');
 
   asyncContextStore.logStore();
-  asyncContextStore.get('request.id');
+  assert.strictEqual(42, asyncContextStore.get('request.id'));
 
-  asyncContextStore.disable();
+  await resolveAfter(10, 'timer');
+
+  asyncContextStore.logStore().disable();
 }
 
 module.exports = asyncDemo;

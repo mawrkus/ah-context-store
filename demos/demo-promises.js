@@ -9,6 +9,6 @@ const asyncContextStore = new AsyncContextStore({
 
 const { resolveAfter } = helpersFactory(asyncContextStore);
 
-demos.demo1({ asyncContextStore, resolveAfter });
-// demos.demo2({ asyncContextStore, resolveAfter });
-// demos.demo3({ asyncContextStore, resolveAfter });
+const demo = demos[`demo${process.argv[2] || 1}`];
+
+demo({ asyncContextStore, resolveAfter });

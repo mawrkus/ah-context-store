@@ -16,7 +16,7 @@ class AsyncContextStore {
   /**
    * @param {String[]} [debug=[]] ['methods', 'hooks]
    */
-  constructor({ debug } = { debug: [] }) {
+  constructor({ debug = [] } = { debug: [] }) {
     this._contexts = {};
 
     this._asyncHooks = asyncHooks;
@@ -107,13 +107,18 @@ class AsyncContextStore {
    * @param {Object} resource
    */
   _init(asyncId, type, triggerAsyncId/* , resource */) {
-    const parentId = triggerAsyncId/* || this._asyncHooks.executionAsyncId() */;
-    const parentContext = this._contexts[parentId];
+    const currentId = type === 'PROMISE'
+      ? this._asyncHooks.executionAsyncId()
+      : triggerAsyncId;
 
-    this._contexts[asyncId] = {
-      parentId,
-      data: parentContext ? parentContext.data : {},
-    };
+    const currentContext = this._contexts[currentId];
+
+    if (currentId in this._contexts) {
+      this._contexts[asyncId] = {
+        parentId: currentId,
+        data: currentContext.data,
+      };
+    }
   }
 
   /**
@@ -140,7 +145,10 @@ class AsyncContextStore {
   /**
    * @param {Number} asyncId
    */
-  _promiseResolve(/* asyncId */) {
+  _promiseResolve(asyncId) {
+    if (asyncId in this._contexts) {
+      delete this._contexts[asyncId];
+    }
   }
 
   /**
