@@ -1,9 +1,9 @@
 const assert = require('assert').strict;
-const model = require('./model');
+const repository = require('./repository');
 const { resolveAfter } = require('../helpers');
 
-async function routeController(request) {
-  return model({
+function routeController(request) {
+  return repository.getStatus({
     requestId: request.id,
   });
 }
