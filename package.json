@@ -1,5 +1,5 @@
 {
-  "name": "async-context-store",
+  "name": "ah-context-store",
   "version": "0.1.0",
   "description": "A context storage for async resources",
   "main": "index.js",

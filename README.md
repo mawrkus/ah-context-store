@@ -5,7 +5,7 @@ A context storage for async resources, based on the Node.js [async_hooks](https:
 ## 🔗 Installation (not yet published)
 
 ```shell
-$ npm install async-context-store // soon...
+$ npm install ah-context-store // soon...
 ```
 
 ## 🔗 Usage
@@ -129,3 +129,9 @@ $ npm run demo:server
 
 $ ./demos/server/stress my-agent
 ```
+
+## 🔗 Resources
+
+- "Grokking Asynchronous Work in Node.js" by Thorsten Lorenz:
+  + Video -> https://www.youtube.com/watch?v=8Xoht4J6Jjw
+  + Slides -> http://thlorenz.com/talks/async-hooks/book/
