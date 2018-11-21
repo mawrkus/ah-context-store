@@ -1,9 +1,5 @@
 const model = require('./model');
-
-const { helpersFactory } = require('../helpers');
-const asyncContextStore = require('./asyncContextStoreSingleton');
-
-const { resolveAfter } = helpersFactory(asyncContextStore);
+const { resolveAfter } = require('../helpers');
 
 async function routeController(request, h) {
   const modelData = await model({
@@ -25,6 +21,7 @@ module.exports = [{
               h.asyncContextStore.log(`Executing route.ext.onPreAuth(${request.id})...`);
 
               await resolveAfter(100, `route.ext.onPreAuth(${request.id})`);
+
               h.asyncContextStore.get('request.id');
               h.asyncContextStore.get('request.ua');
 
@@ -36,6 +33,7 @@ module.exports = [{
           h.asyncContextStore.log(`Executing route.pre(${request.id})...`);
 
           await resolveAfter(100, `route.pre(${request.id})`);
+
           h.asyncContextStore.get('request.id');
           h.asyncContextStore.get('request.ua');
 

@@ -1,34 +1,34 @@
-function resolveAfterFactory(logSync) {
-  function resolveAfter(ms, callerId) {
-    return new Promise((resolve) => {
-      const randMs = Math.ceil(Math.random() * ms);
+const fs = require('fs');
+const { format } = require('util');
 
-      logSync(`${callerId} -> ${randMs}ms...`);
+const USER_AGENTS = require('./server/ua');
 
-      setTimeout(
-        () => {
-          logSync(`<- ${callerId} done in ${randMs}ms.`);
-          resolve();
-        },
-        randMs,
-      );
-    });
-  }
-  return (ms, callerId) => resolveAfter(ms, callerId);
+function logSync(...args) {
+  fs.writeSync(1, `${format(...args)}\n`);
 }
 
-function helpersFactory(asyncContextStore) {
-  process.on('unhandledRejection', (error) => {
-    asyncContextStore.log('Unhandled promise rejection!');
-    asyncContextStore.log(error);
-    process.exit(1);
-  });
+function resolveAfter(ms, callerId) {
+  return new Promise((resolve) => {
+    const randMs = Math.ceil(Math.random() * ms);
 
-  return {
-    resolveAfter: resolveAfterFactory(asyncContextStore.log.bind(asyncContextStore)),
-  };
+    logSync(`${callerId} -> ${randMs}ms...`);
+
+    setTimeout(
+      () => {
+        logSync(`<- ${callerId} done in ${randMs}ms.`);
+        resolve();
+      },
+      randMs,
+    );
+  });
+}
+
+function getRandomUA() {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 }
 
 module.exports = {
-  helpersFactory,
+  resolveAfter,
+  logSync,
+  getRandomUA,
 };

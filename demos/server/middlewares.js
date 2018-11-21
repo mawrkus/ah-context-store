@@ -1,17 +1,13 @@
-const { helpersFactory } = require('../helpers');
-const asyncContextStore = require('./asyncContextStoreSingleton');
-
-const { resolveAfter } = helpersFactory(asyncContextStore);
+const { resolveAfter } = require('../helpers');
 
 let requestId = 42;
 
 module.exports = [
   {
-    name: 'request-id',
+    name: 'set-request-id',
     register(server) {
-      server.ext('onRequest', async (request, h) => {
-        request.id = requestId;
-        requestId += 1;
+      server.ext('onRequest', (request, h) => {
+        request.id = requestId++; // eslint-disable-line no-plusplus
 
         h.asyncContextStore.log(`Executing server.ext.onRequest() -> new request.id=${request.id}`);
 
@@ -25,7 +21,7 @@ module.exports = [
     },
   },
   {
-    name: 'pre-fetch',
+    name: 'pre-handler',
     register(server) {
       server.ext('onPreHandler', async (request, h) => {
         h.asyncContextStore.log(`Executing server.ext.onPreHandler(${request.id})...`);

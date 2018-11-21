@@ -4,7 +4,10 @@ const { helpersFactory } = require('./helpers');
 const demos = require('./async-await');
 
 const asyncContextStore = new AsyncContextStore({
-  debug: ['methods', 'hooks'],
+  debug: [
+    'methods',
+    'hooks',
+  ],
 }).enable();
 
 const { resolveAfter } = helpersFactory(asyncContextStore);
