@@ -7,16 +7,19 @@ module.exports = [
     name: 'set-request-id',
     register(server) {
       server.ext('onRequest', (request, h) => {
-        request.id = requestId++; // eslint-disable-line no-plusplus
+        return new Promise((resolve) => {
+          request.id = requestId++; // eslint-disable-line no-plusplus
 
-        h.asyncContextStore.log(`Executing server.ext.onRequest() -> new request.id=${request.id}`);
+          h.asyncContextStore.log(`Executing server.ext.onRequest() -> new request.id=${request.id}`);
 
-        h.asyncContextStore.set('request.id', request.id);
-        h.asyncContextStore.set('request.ua', request.headers['user-agent']);
+          h.asyncContextStore
+            .set('request.id', request.id)
+            .set('request.ua', request.headers['user-agent']);
 
-        h.asyncContextStore.logStore();
+          h.asyncContextStore.log(`# contexts in store=${h.asyncContextStore.size}`);
 
-        return h.continue;
+          resolve(h.continue);
+        });
       });
     },
   },

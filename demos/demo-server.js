@@ -1,7 +1,4 @@
-const assert = require('assert').strict;
-
 const createServer = require('./server/createServer');
-const asyncContextStore = require('./server/asyncContextStoreSingleton');
 const { resolveAfter, logSync, getRandomUA } = require('./helpers');
 
 process.on('unhandledRejection', (error) => {
@@ -10,15 +7,7 @@ process.on('unhandledRejection', (error) => {
   process.exit(1);
 });
 
-(async () => {
-  await Promise.all([
-    resolveAfter(100, 'cacheSystem'),
-    resolveAfter(100, 'eventsPublisher'),
-  ]);
-
-  const server = await createServer();
-  await server.start();
-
+/* async function injectRequests(server) {
   const requestsP = [];
   let requestsCount = 2;
 
@@ -32,17 +21,19 @@ process.on('unhandledRejection', (error) => {
     requestsP.push(requestP);
   }
 
-  const responses = await Promise.all(requestsP);
+  await Promise.all(requestsP);
 
-  logSync('All requests processed ->');
+  logSync('All requests processed.');
+} */
 
-  responses.forEach(({ payload, request }) => {
-    logSync('Request  ->', request.id, request.headers);
-    logSync('Response ->', payload);
+(async () => {
+  await Promise.all([
+    resolveAfter(100, 'cacheSystem'),
+    resolveAfter(100, 'eventsPublisher'),
+  ]);
 
-    assert.strictEqual(request.id, payload.requestId);
-    assert.strictEqual(request.headers['user-agent'], payload.ua);
-  });
+  const server = await createServer();
+  await server.start();
 
-  asyncContextStore.logStore();
+  // await injectRequests(server);
 })();

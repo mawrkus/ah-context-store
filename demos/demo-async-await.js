@@ -1,5 +1,5 @@
 const AsyncContextStore = require('..');
-const { helpersFactory } = require('./helpers');
+const { resolveAfter } = require('./helpers');
 
 const demos = require('./async-await');
 
@@ -9,8 +9,6 @@ const asyncContextStore = new AsyncContextStore({
     'hooks',
   ],
 }).enable();
-
-const { resolveAfter } = helpersFactory(asyncContextStore);
 
 const demo = demos[`demo${process.argv[2] || 1}`];
 

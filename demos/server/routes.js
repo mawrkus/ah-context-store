@@ -1,11 +1,11 @@
+const assert = require('assert').strict;
 const model = require('./model');
 const { resolveAfter } = require('../helpers');
 
-async function routeController(request, h) {
-  const modelData = await model({
+async function routeController(request) {
+  return model({
     requestId: request.id,
   });
-  return h.response(modelData).code(200);
 }
 
 module.exports = [{
@@ -42,7 +42,28 @@ module.exports = [{
       },
       async handler(request, h) {
         h.asyncContextStore.log(`Executing route.handler(${request.id})...`);
-        return routeController(request, h, resolveAfter);
+
+        const payload = await routeController(request);
+
+        const { id: requestId, headers } = request;
+
+        assert.strictEqual(requestId, payload.requestId);
+        assert.strictEqual(headers['user-agent'], payload.ua);
+
+        return h.response(payload).code(200);
+      },
+    });
+  },
+}, {
+  name: 'api-endpoint',
+  register(server) {
+    server.route({
+      method: 'GET',
+      path: '/api/{nickname}/{requestId}',
+      handler(request, h) {
+        const { nickname, requestId } = request.params;
+        h.asyncContextStore.log(`* API request received from "${nickname}/${requestId}" ->`, request.headers);
+        return h.response({ status: 'green', fromId: requestId }).code(200);
       },
     });
   },
