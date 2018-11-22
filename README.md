@@ -31,6 +31,8 @@ function handleRequest(requestId) {
   const request1P = resolveAfter(10, 'request1')
     .then(() => {
       asyncContextStore.set('request.id', 42).logStore();
+    })
+    .then(() => {
       assert.strictEqual(42, asyncContextStore.get('request.id'));
       return handleRequest(42);
     });
@@ -38,6 +40,8 @@ function handleRequest(requestId) {
   const request2P = resolveAfter(10, 'request2')
     .then(() => {
       asyncContextStore.set('request.id', 69).logStore();
+    })
+    .then(() => {
       assert.strictEqual(69, asyncContextStore.get('request.id'));
       return handleRequest(69);
     });

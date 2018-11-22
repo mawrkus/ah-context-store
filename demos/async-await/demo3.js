@@ -12,15 +12,15 @@ async function asyncDemo3({ asyncContextStore, resolveAfter }) {
   const request1P = resolveAfter(10, 'request1')
     .then(async () => {
       asyncContextStore.set('request.id', 42).logStore();
-      assert.strictEqual(42, asyncContextStore.get('request.id'));
       await handleRequest(42);
+      assert.strictEqual(42, asyncContextStore.get('request.id'));
     });
 
   const request2P = resolveAfter(10, 'request2')
     .then(async () => {
       asyncContextStore.set('request.id', 69).logStore();
-      assert.strictEqual(69, asyncContextStore.get('request.id'));
       await handleRequest(69);
+      assert.strictEqual(69, asyncContextStore.get('request.id'));
     });
 
   await Promise.all([request1P, request2P]);
