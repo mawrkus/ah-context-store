@@ -114,7 +114,7 @@ class AsyncContextStore {
 
 - Promise-based demos.
 - `async-await` demos.
-- [Hapi v17](https://hapijs.com/api/17.7.0) demo, to illustrate HTTP request tracing.
+- [Hapi v17](https://hapijs.com/api/17.7.0) demo, to illustrate HTTP request tracing across multiple services.
 
 Clone the project...
 
