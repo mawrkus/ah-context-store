@@ -14,7 +14,7 @@ const FD_STDOUT = 1;
  */
 class AsyncContextStore {
   /**
-   * @param {String[]} [debug=[]] ['methods', 'hooks]
+   * @param {String[]} [debug=[]] ['methods', 'hooks']
    */
   constructor({ debug = [] } = { debug: [] }) {
     this._contexts = {};
