@@ -1,18 +1,16 @@
-const createAsyncContextStoreSingleton = require('./createAsyncContextStoreSingleton');
+const asyncContextStore = require('./asyncContextStore');
 const createApiClient = require('./createApiClient');
 
-const asyncContextStore = createAsyncContextStoreSingleton();
 const apiClient = createApiClient();
 
-module.exports = {
-  async getStatus({ requestId }) {
-    const ua = asyncContextStore.get('request.ua');
-    const { data } = await apiClient.get(`/api/${ua}/${requestId}`);
+module.exports = async () => {
+  const requestId = asyncContextStore.get('request.id');
+  const requestUa = asyncContextStore.get('request.ua');
 
-    return {
-      requestId: asyncContextStore.get('request.id'),
-      ua,
-      ...data,
-    };
-  },
+  const { data } = await apiClient.request({
+    method: 'GET',
+    url: `/api/${requestUa}/${requestId}`,
+  });
+
+  return data;
 };

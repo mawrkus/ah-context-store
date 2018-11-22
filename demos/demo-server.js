@@ -1,5 +1,5 @@
 const createServer = require('./server/createServer');
-const { resolveAfter, logSync, getRandomUA } = require('./helpers');
+const { resolveAfter, logSync } = require('./helpers');
 
 process.on('unhandledRejection', (error) => {
   logSync('Unhandled promise rejection!');
@@ -7,33 +7,13 @@ process.on('unhandledRejection', (error) => {
   process.exit(1);
 });
 
-/* async function injectRequests(server) {
-  const requestsP = [];
-  let requestsCount = 2;
-
-  while (requestsCount-- >= 0) { // eslint-disable-line no-plusplus
-    const requestP = server
-      .inject({
-        url: '/demo',
-        headers: { 'user-agent': getRandomUA() },
-      });
-
-    requestsP.push(requestP);
-  }
-
-  await Promise.all(requestsP);
-
-  logSync('All requests processed.');
-} */
-
 (async () => {
   await Promise.all([
-    resolveAfter(100, 'cacheSystem'),
-    resolveAfter(100, 'eventsPublisher'),
+    resolveAfter(100, 'cacheSystem.init'),
+    resolveAfter(100, 'eventsPublisher.init'),
   ]);
 
   const server = await createServer();
-  await server.start();
 
-  // await injectRequests(server);
+  await server.start();
 })();

@@ -1,39 +1,41 @@
+const assert = require('assert').strict;
+
 const { resolveAfter } = require('../helpers');
 
-let requestId = 42;
+module.exports = [{
+  name: 'server-ext-pre-handler',
+  register(server) {
+    server.ext('onPreHandler', async (request, h) => {
+      const { req } = request.raw;
+      h.asyncContextStore.log(`<EXT> server.ext.onPreHandler(${req._id},${req._ua})...`);
 
-module.exports = [
-  {
-    name: 'set-request-id',
-    register(server) {
-      server.ext('onRequest', (request, h) => {
-        request.id = requestId++; // eslint-disable-line no-plusplus
+      assert.strictEqual(h.asyncContextStore.get('request.id'), req._id);
+      assert.strictEqual(h.asyncContextStore.get('request.ua'), req._ua);
 
-        h.asyncContextStore.log(`Executing server.ext.onRequest() -> new request.id=${request.id}`);
+      await resolveAfter(100, `server.ext.onPreHandler(${req._id},${req._ua})`);
 
-        h.asyncContextStore
-          .set('request.id', request.id)
-          .set('request.ua', request.headers['user-agent']);
+      assert.strictEqual(h.asyncContextStore.get('request.id'), req._id);
+      assert.strictEqual(h.asyncContextStore.get('request.ua'), req._ua);
 
-        h.asyncContextStore.log(`# contexts in store=${h.asyncContextStore.size}`);
-
-        return h.continue;
-      });
-    },
+      return h.continue;
+    });
   },
-  {
-    name: 'pre-handler',
-    register(server) {
-      server.ext('onPreHandler', async (request, h) => {
-        h.asyncContextStore.log(`Executing server.ext.onPreHandler(${request.id})...`);
+}, {
+  name: 'server-ext-post-handler',
+  register(server) {
+    server.ext('onPostHandler', async (request, h) => {
+      const { req } = request.raw;
+      h.asyncContextStore.log(`<EXT> server.ext.onPostHandler(${req._id},${req._ua})...`);
 
-        await resolveAfter(100, `server.ext.onPreHandler(${request.id})`);
+      assert.strictEqual(h.asyncContextStore.get('request.id'), req._id);
+      assert.strictEqual(h.asyncContextStore.get('request.ua'), req._ua);
 
-        h.asyncContextStore.get('request.id');
-        h.asyncContextStore.get('request.ua');
+      await resolveAfter(100, `server.ext.onPostHandler(${req._id},${req._ua})`);
 
-        return h.continue;
-      });
-    },
+      assert.strictEqual(h.asyncContextStore.get('request.id'), req._id);
+      assert.strictEqual(h.asyncContextStore.get('request.ua'), req._ua);
+
+      return h.continue;
+    });
   },
-];
+}];
