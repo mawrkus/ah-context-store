@@ -131,7 +131,7 @@ $ npm run demo:async-await
 $ npm run demo:promises
 $ npm run demo:server
 
-$ ./demos/server/stress my-agent
+$ ./demos/demo-server-stress.sh my-agent
 ```
 
 ## 🔗 Resources
