@@ -8,7 +8,9 @@ const asyncContextStore = new AsyncContextStore({
     'methods',
     'hooks',
   ],
-}).enable();
+});
+
+asyncContextStore.enable();
 
 const demo = demos[`demo${process.argv[2] || 1}`];
 

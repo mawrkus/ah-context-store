@@ -18,9 +18,8 @@ function createServerListener() {
 
     asyncContextStore.log(`<REQUEST> ${method} ${url} from "${req._ua}" -> request.id=${req._id}`, headers);
 
-    asyncContextStore
-      .set('request.id', req._id)
-      .set('request.ua', req._ua);
+    asyncContextStore.set('request.id', req._id);
+    asyncContextStore.set('request.ua', req._ua);
 
     asyncContextStore.log(`# contexts in store=${asyncContextStore.size}`);
 

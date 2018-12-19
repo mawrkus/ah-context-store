@@ -1,9 +1,13 @@
 const AsyncContextStore = require('../..');
 
 // singleton
-module.exports = new AsyncContextStore({
+const asyncContextStore = new AsyncContextStore({
   debug: [
     'methods',
     // 'hooks',
   ],
-}).enable();
+});
+
+asyncContextStore.enable();
+
+module.exports = asyncContextStore;

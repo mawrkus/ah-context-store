@@ -13,7 +13,8 @@ function asyncDemo({ asyncContextStore, resolveAfter }) {
 
   const request1P = resolveAfter(10, 'request1')
     .then(() => {
-      asyncContextStore.set('request.id', 42).logStore();
+      asyncContextStore.set('request.id', 42);
+      asyncContextStore.logStore();
     })
     .then(() => {
       assert.strictEqual(42, asyncContextStore.get('request.id'));
@@ -22,7 +23,8 @@ function asyncDemo({ asyncContextStore, resolveAfter }) {
 
   const request2P = resolveAfter(10, 'request2')
     .then(() => {
-      asyncContextStore.set('request.id', 69).logStore();
+      asyncContextStore.set('request.id', 69);
+      asyncContextStore.logStore();
     })
     .then(() => {
       assert.strictEqual(69, asyncContextStore.get('request.id'));
@@ -32,7 +34,8 @@ function asyncDemo({ asyncContextStore, resolveAfter }) {
   return Promise.all([request1P, request2P])
     .then(() => {
       assert.strictEqual(undefined, asyncContextStore.get('request.id'));
-      asyncContextStore.logStore().disable();
+      asyncContextStore.logStore();
+      asyncContextStore.disable();
     });
 }
 

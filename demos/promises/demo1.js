@@ -3,7 +3,8 @@ const assert = require('assert').strict;
 function promiseDemo1({ asyncContextStore, resolveAfter }) {
   asyncContextStore.log('- -- --- promises: demo1 --- -- -');
 
-  asyncContextStore.set('request.id', 42).logStore();
+  asyncContextStore.set('request.id', 42);
+  asyncContextStore.logStore();
 
   return resolveAfter(10, 'timer')
     .then(() => {
@@ -12,7 +13,8 @@ function promiseDemo1({ asyncContextStore, resolveAfter }) {
       return resolveAfter(10, 'timer');
     })
     .then(() => {
-      asyncContextStore.logStore().disable();
+      asyncContextStore.logStore();
+      asyncContextStore.disable();
     });
 }
 

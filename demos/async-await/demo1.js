@@ -3,7 +3,8 @@ const assert = require('assert').strict;
 async function asyncDemo({ asyncContextStore, resolveAfter }) {
   asyncContextStore.log('- -- --- async/await: demo1 --- -- -');
 
-  asyncContextStore.set('request.id', 42).logStore();
+  asyncContextStore.set('request.id', 42);
+  asyncContextStore.logStore();
 
   await resolveAfter(10, 'timer');
 
@@ -12,7 +13,8 @@ async function asyncDemo({ asyncContextStore, resolveAfter }) {
 
   await resolveAfter(10, 'timer');
 
-  asyncContextStore.logStore().disable();
+  asyncContextStore.logStore();
+  asyncContextStore.disable();
 }
 
 module.exports = asyncDemo;
