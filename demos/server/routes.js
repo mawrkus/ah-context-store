@@ -2,7 +2,23 @@ const assert = require('assert').strict;
 const repository = require('./repository');
 const { resolveAfter } = require('../helpers');
 
-function routeController() {
+async function routeController({ req, asyncContextStore }) {
+  const response = await repository();
+
+  assert.strictEqual(asyncContextStore.get('request.id'), req._id);
+  assert.strictEqual(asyncContextStore.get('request.ua'), req._ua);
+
+  assert.strictEqual(response.requestId, req._id);
+  assert.strictEqual(response.ua, req._ua);
+
+  await Promise.all([
+    resolveAfter(100, `repository call #1 for (${req._id},${req._ua})`),
+    resolveAfter(100, `repository call #2 for (${req._id},${req._ua})`),
+  ]);
+
+  assert.strictEqual(asyncContextStore.get('request.id'), req._id);
+  assert.strictEqual(asyncContextStore.get('request.ua'), req._ua);
+
   return repository();
 }
 
@@ -53,7 +69,7 @@ module.exports = [{
         assert.strictEqual(h.asyncContextStore.get('request.id'), req._id);
         assert.strictEqual(h.asyncContextStore.get('request.ua'), req._ua);
 
-        const response = await routeController();
+        const response = await routeController({ req, asyncContextStore: h.asyncContextStore });
 
         h.asyncContextStore.log('<ROUTE> response ->', response);
 
