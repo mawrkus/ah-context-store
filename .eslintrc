@@ -3,16 +3,11 @@
     "airbnb-base"
   ],
   "plugins": [
-    "jest"
   ],
   "env": {
-    "node": true,
-    "jest": true
+    "node": true
   },
   "rules": {
-    "jest/no-disabled-tests": "error",
-    "jest/no-focused-tests": "error",
-    "jest/no-identical-title": "warn",
     "no-underscore-dangle": "off"
   }
 }

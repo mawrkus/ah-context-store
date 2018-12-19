@@ -1,0 +1,20 @@
+config:
+  target: http://localhost:3030
+  phases:
+    - duration: 20
+      arrivalRate: 25
+  variables:
+    ua:
+      - "lynx"
+      - "lion"
+      - "sheep"
+      - "fish"
+      - "bee"
+      - "falcon"
+      - "firefly"
+scenarios:
+  - flow:
+      - get:
+          url: "/demo"
+          headers:
+            user-agent: "{{ ua }}"

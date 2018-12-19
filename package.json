@@ -5,12 +5,10 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint src",
-    "pretest": "npm run lint",
-    "test": "jest --coverage",
-    "tdd": "jest --watch --verbose",
     "demo:async-await": "nodemon demos/demo-async-await.js --watch src --watch demos --exec babel-node",
     "demo:promises": "nodemon demos/demo-promises.js --watch src --watch demos --exec babel-node",
     "demo:server": "nodemon demos/demo-server.js --watch src --watch demos --exec babel-node",
+    "stress:server": "artillery run demos/server/stress.yml",
     "build:demos": "rm -rf build && babel demos -d build --copy-files",
     "prerelease": "npm run test",
     "release": "npm version -m \"New version: %s\"",
@@ -30,21 +28,14 @@
         "@babel/preset-env",
         {
           "targets": {
-            "node": "10.13.0"
-          },
-          "useBuiltIns": "usage"
+            "node": "current"
+          }
         }
       ]
     ],
     "plugins": [
       "@babel/plugin-syntax-object-rest-spread"
     ]
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "<rootDir>/node_modules/"
-    ],
-    "testRegex": "/__tests__/.*\\.spec\\.js$"
   },
   "keywords": [
     "async_hooks",
@@ -62,13 +53,12 @@
     "@babel/plugin-syntax-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.1.6",
     "@babel/register": "^7.0.0",
+    "artillery": "^1.6.0-26",
     "axios": "^0.18.0",
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jest": "^22.1.0",
     "hapi": "^17.8.1",
-    "jest": "^23.6.0",
     "nodemon": "^1.18.7"
   }
 }
